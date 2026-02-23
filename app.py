@@ -10,8 +10,8 @@ if API_KEY:
     genai.configure(api_key=API_KEY)
 
 # --- CONFIGURATION ---
-# We are using the model explicitly listed in your account
-MODEL_NAME = 'gemini-2.0-flash' 
+# We are using 'gemini-flash-latest' which was explicitly on your allowed list.
+MODEL_NAME = 'gemini-flash-latest'
 
 SYSTEM_PROMPT = """
 You are a helpful assistant that writes WhatsApp Business Templates. 
@@ -34,13 +34,8 @@ def chat():
     user_message = request.json.get("message")
     
     try:
-        # Create the model with the specific system instruction
         model = genai.GenerativeModel(MODEL_NAME, system_instruction=SYSTEM_PROMPT)
-        
-        # Start a chat session (this helps it remember context if needed)
         chat_session = model.start_chat(history=[])
-        
-        # Send the user's message
         response = chat_session.send_message(user_message)
         
         return jsonify({"response": response.text})
