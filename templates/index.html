@@ -3,120 +3,229 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Assistant</title>
+    <title>Template Gen Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        /* 1. RESET & BASIC SETUP */
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: #e5ddd5; display: flex; flex-direction: column; height: 100vh; }
-
-        /* 2. HEADER */
-        header {
-            background-color: #075e54;
-            color: white;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            z-index: 10;
+        :root {
+            --primary: #4F46E5; /* Indigo */
+            --primary-hover: #4338ca;
+            --bg-body: #f3f4f6;
+            --bg-panel: #ffffff;
+            --text-main: #111827;
+            --text-sub: #6b7280;
+            --border: #e5e7eb;
         }
-        h1 { font-size: 1.2rem; font-weight: 600; }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
         
-        .clear-btn {
-            background: transparent;
-            border: 1px solid white;
-            color: white;
-            padding: 5px 15px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: 0.3s;
+        body {
+            background-color: var(--bg-body);
+            height: 100vh;
+            display: flex;
+            color: var(--text-main);
         }
-        .clear-btn:hover { background: rgba(255,255,255,0.2); }
 
-        /* 3. CHAT AREA */
-        #chat-container {
-            flex: 1;
-            overflow-y: auto;
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: 260px;
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border);
             padding: 20px;
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
-            background-blend-mode: soft-light;
+            gap: 20px;
         }
 
-        .message {
-            max-width: 80%;
-            padding: 10px 15px;
-            border-radius: 10px;
-            line-height: 1.5;
+        .brand {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .settings-group {
+            margin-top: 20px;
+        }
+        
+        label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-sub);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            background-color: #fff;
+            color: var(--text-main);
+            outline: none;
+        }
+
+        .new-chat-btn {
+            margin-top: auto;
+            background: white;
+            border: 1px solid var(--border);
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            color: var(--text-main);
+            font-weight: 500;
+            transition: 0.2s;
+        }
+        .new-chat-btn:hover { background: #f9fafb; border-color: #d1d5db; }
+
+        /* --- MAIN CHAT AREA --- */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
             position: relative;
+        }
+
+        #chat-box {
+            flex: 1;
+            overflow-y: auto;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            scroll-behavior: smooth;
+        }
+
+        .message-row {
+            display: flex;
+            gap: 15px;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        .av-bot { background: var(--primary); color: white; }
+        .av-user { background: #e5e7eb; color: #374151; }
+
+        .message-content {
+            flex: 1;
+            line-height: 1.6;
             font-size: 0.95rem;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
         
-        .user-message {
-            align-self: flex-end;
-            background-color: #dcf8c6;
-            color: #333;
-            border-top-right-radius: 0;
+        .message-content strong { color: #111827; font-weight: 600; }
+
+        /* Copy Button */
+        .copy-btn {
+            display: inline-block;
+            margin-top: 10px;
+            font-size: 0.75rem;
+            color: var(--text-sub);
+            cursor: pointer;
+            border: 1px solid var(--border);
+            padding: 4px 8px;
+            border-radius: 4px;
+            background: white;
+        }
+        .copy-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+        /* --- INPUT AREA --- */
+        .input-wrapper {
+            background: var(--bg-panel);
+            border-top: 1px solid var(--border);
+            padding: 20px;
+            display: flex;
+            justify-content: center;
         }
 
-        .bot-message {
-            align-self: flex-start;
-            background-color: white;
-            color: #333;
-            border-top-left-radius: 0;
-        }
-        
-        .bot-message strong { color: #075e54; }
-
-        /* 4. INPUT AREA */
-        .input-area {
-            padding: 15px;
-            background: #f0f0f0;
+        .input-container {
+            width: 100%;
+            max-width: 800px;
+            position: relative;
             display: flex;
             gap: 10px;
-            align-items: center;
         }
+
         input {
             flex: 1;
-            padding: 12px 15px;
-            border-radius: 25px;
-            border: 1px solid #ccc;
-            outline: none;
+            padding: 14px 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
             font-size: 1rem;
+            outline: none;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            transition: 0.2s;
         }
-        button {
-            background-color: #075e54;
+        input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+
+        .send-btn {
+            background: var(--primary);
             color: white;
             border: none;
-            padding: 12px 20px;
-            border-radius: 50%;
+            padding: 0 20px;
+            border-radius: 8px;
+            font-weight: 600;
             cursor: pointer;
-            font-weight: bold;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: 0.2s;
         }
-        button:hover { background-color: #128c7e; }
+        .send-btn:hover { background: var(--primary-hover); }
+
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>🤖 Smart Assistant</h1>
-        <button class="clear-btn" onclick="clearChat()">New Chat 🗑️</button>
-    </header>
-
-    <div id="chat-container">
-        <div class="message bot-message">
-            Hi! 👋 I'm ready to help. Ask me for a template or just chat!
+    <div class="sidebar">
+        <div class="brand">
+            <span>⚡</span> TemplateGen
         </div>
+
+        <div class="settings-group">
+            <label>Template Tone</label>
+            <select id="tone-select">
+                <option value="Professional">👔 Professional</option>
+                <option value="Friendly">😊 Friendly / Casual</option>
+                <option value="Urgent">🔥 Urgent / FOMO</option>
+                <option value="Persuasive">✨ Persuasive</option>
+            </select>
+        </div>
+
+        <div style="font-size: 0.8rem; color: #9ca3af; margin-top: 10px;">
+            Select a tone and ask for a template.
+        </div>
+
+        <button class="new-chat-btn" onclick="clearChat()">+ New Chat</button>
     </div>
 
-    <div class="input-area">
-        <input type="text" id="user-input" placeholder="Type a message..." onkeypress="handleEnter(event)">
-        <button onclick="sendMessage()">➤</button>
+    <div class="main-content">
+        <div id="chat-box">
+            <div class="message-row">
+                <div class="avatar av-bot">AI</div>
+                <div class="message-content">
+                    <strong>System</strong><br>
+                    Hello! I am your professional template assistant. Select a tone from the sidebar and describe what you need.
+                </div>
+            </div>
+        </div>
+
+        <div class="input-wrapper">
+            <div class="input-container">
+                <input type="text" id="user-input" placeholder="e.g. Discount message for Diwali..." onkeypress="handleEnter(event)">
+                <button class="send-btn" onclick="sendMessage()">Send</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -124,67 +233,77 @@
 
         async function sendMessage() {
             const input = document.getElementById('user-input');
-            const container = document.getElementById('chat-container');
+            const box = document.getElementById('chat-box');
+            const tone = document.getElementById('tone-select').value;
             const text = input.value.trim();
             
             if (!text) return;
 
-            // 1. Show user message immediately
-            appendMessage(text, 'user-message');
+            // 1. Add User Message
+            addMessage('User', text, 'av-user');
             input.value = '';
 
-            // 2. Show "Typing..."
-            const loadingDiv = document.createElement('div');
-            loadingDiv.className = 'message bot-message';
-            loadingDiv.innerText = 'Typing...';
-            loadingDiv.id = 'loading';
-            container.appendChild(loadingDiv);
-            container.scrollTop = container.scrollHeight;
+            // 2. Add Loading State
+            const loadingId = addMessage('AI', 'Writing...', 'av-bot', true);
+
+            // 3. Update History & Send
+            chatHistory.push({ role: "user", parts: [{ text: text }] });
 
             try {
-                // --- THE FIX IS HERE ---
-                // We send the OLD history + the NEW message separately.
-                // We do NOT add the new message to 'chatHistory' yet.
                 const response = await fetch('/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         message: text,
-                        history: chatHistory 
+                        history: chatHistory,
+                        tone: tone // Sending the selected tone!
                     })
                 });
                 
                 const data = await response.json();
                 
-                // Remove loading
-                container.removeChild(loadingDiv);
-                
-                // Show AI response
+                // Remove Loading Text
+                document.getElementById(loadingId).remove();
+
+                // Format and Add AI Message
                 let cleanText = data.response.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
                 cleanText = cleanText.replace(/\n/g, '<br>');
-                appendMessage(cleanText, 'bot-message', true);
+                
+                addMessage('AI', cleanText, 'av-bot', false, true); // True enables Copy button
 
-                // 3. NOW we update the history with both messages for next time
-                chatHistory.push({ role: "user", parts: [{ text: text }] });
                 chatHistory.push({ role: "model", parts: [{ text: data.response }] });
 
             } catch (error) {
-                loadingDiv.innerText = "Error: Connection failed. Try clicking 'New Chat'.";
-                console.error(error);
+                document.getElementById(loadingId).innerText = "Error connecting to server.";
             }
         }
 
-        function appendMessage(text, className, isHtml = false) {
-            const container = document.getElementById('chat-container');
-            const div = document.createElement('div');
-            div.className = `message ${className}`;
-            if (isHtml) {
-                div.innerHTML = text;
-            } else {
-                div.innerText = text;
-            }
-            container.appendChild(div);
-            container.scrollTop = container.scrollHeight;
+        function addMessage(name, text, avatarClass, isLoading = false, showCopy = false) {
+            const box = document.getElementById('chat-box');
+            const row = document.createElement('div');
+            row.className = 'message-row';
+            row.id = isLoading ? 'loading-row' : '';
+
+            let copyHtml = showCopy ? `<div class="copy-btn" onclick="copyText(this)">📋 Copy Text</div>` : '';
+
+            row.innerHTML = `
+                <div class="avatar ${avatarClass}">${name === 'AI' ? 'AI' : 'You'}</div>
+                <div class="message-content">
+                    <strong>${name}</strong><br>
+                    <span class="text-body">${text}</span>
+                    ${copyHtml}
+                </div>
+            `;
+            box.appendChild(row);
+            box.scrollTop = box.scrollHeight;
+            return row.id;
+        }
+
+        function copyText(btn) {
+            const textBody = btn.parentElement.querySelector('.text-body').innerText;
+            navigator.clipboard.writeText(textBody);
+            btn.innerText = "✅ Copied!";
+            setTimeout(() => btn.innerText = "📋 Copy Text", 2000);
         }
 
         function handleEnter(e) {
@@ -192,9 +311,7 @@
         }
 
         function clearChat() {
-            const container = document.getElementById('chat-container');
-            container.innerHTML = `<div class="message bot-message">Chat cleared! 🧹</div>`;
-            chatHistory = []; // Wipe memory
+            location.reload(); // Simple refresh to clear state
         }
     </script>
 </body>
