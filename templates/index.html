@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WhatsApp Bot</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; }
+        #chat-box { height: 400px; border: 1px solid #ccc; overflow-y: scroll; padding: 10px; margin-bottom: 10px; }
+        .message { margin: 5px 0; padding: 5px 10px; border-radius: 5px; }
+        .user { background: #e1ffc7; text-align: right; }
+        .bot { background: #f0f0f0; }
+    </style>
+</head>
+<body>
+    <h2>WhatsApp Template Generator</h2>
+    <div id="chat-box"></div>
+    <input type="text" id="user-input" placeholder="Type your request..." style="width: 70%;">
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+        async function sendMessage() {
+            let input = document.getElementById('user-input');
+            let box = document.getElementById('chat-box');
+            let text = input.value;
+            
+            // Show user message
+            box.innerHTML += `<div class="message user">${text}</div>`;
+            input.value = '';
+
+            // Send to server
+            let response = await fetch('/chat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({message: text})
+            });
+            
+            let data = await response.json();
+            
+            // Show bot response
+            box.innerHTML += `<div class="message bot">${data.response}</div>`;
+            box.scrollTop = box.scrollHeight; // Scroll to bottom
+        }
+    </script>
+</body>
+</html>
