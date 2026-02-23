@@ -9,21 +9,7 @@ API_KEY = os.environ.get("GEMINI_API_KEY")
 if API_KEY:
     genai.configure(api_key=API_KEY)
 
-# Use the model that works for your account
 MODEL_NAME = 'gemini-flash-latest'
-
-# --- NEW INTELLIGENT PERSONA ---
-SYSTEM_PROMPT = """
-You are a friendly, intelligent AI assistant. You can have normal conversations about anything (weather, coding, life, business).
-
-HOWEVER, you have a special talent for writing "WhatsApp Business Templates". 
-- If the user asks for a template (or it looks like they need a business message), provide one formatted with:
-  1. Template Name (lowercase_underscore)
-  2. Category (MARKETING, UTILITY, etc.)
-  3. The Message Body (with {{1}} variables).
-- If they are just chatting (e.g., "Hi", "How are you"), just reply normally and friendly. 
-- You can occasionally (but not always) mention: "By the way, I can help you draft a WhatsApp template if you need one!"
-"""
 
 @app.route('/')
 def home():
@@ -36,15 +22,29 @@ def chat():
 
     data = request.json
     user_message = data.get("message")
-    # We get the history from the browser so the bot remembers the context!
     history = data.get("history", [])
+    # New Feature: Get the tone from the frontend
+    selected_tone = data.get("tone", "Professional")
+
+    # We dynamically build the prompt based on the user's selection
+    SYSTEM_PROMPT = f"""
+    You are an expert business copywriter.
+    Current Tone Setting: **{selected_tone}**
+    
+    Your Goal: Help the user write perfect WhatsApp Business Templates.
+    
+    1. If the user asks for a template:
+       - Write it in a {selected_tone} style.
+       - Structure it with: "Subject", "Category", and "Body".
+       - Use variables like {{1}} where needed.
+    
+    2. If the user just chats (e.g. "Hi", "Help me"):
+       - Be helpful and polite, but keep your responses concise.
+    """
 
     try:
         model = genai.GenerativeModel(MODEL_NAME, system_instruction=SYSTEM_PROMPT)
-        
-        # We start the chat with the history sent from the frontend
         chat_session = model.start_chat(history=history)
-        
         response = chat_session.send_message(user_message)
         
         return jsonify({"response": response.text})
