@@ -9,7 +9,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #e5ddd5; display: flex; flex-direction: column; height: 100vh; }
 
-        /* 2. HEADER (Green WhatsApp Style) */
+        /* 2. HEADER */
         header {
             background-color: #075e54;
             color: white;
@@ -22,7 +22,6 @@
         }
         h1 { font-size: 1.2rem; font-weight: 600; }
         
-        /* The "New Chat" Button */
         .clear-btn {
             background: transparent;
             border: 1px solid white;
@@ -43,11 +42,10 @@
             display: flex;
             flex-direction: column;
             gap: 15px;
-            background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); /* Subtle pattern */
+            background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
             background-blend-mode: soft-light;
         }
 
-        /* Bubbles */
         .message {
             max-width: 80%;
             padding: 10px 15px;
@@ -58,7 +56,6 @@
             box-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
         
-        /* User Bubble (Green) */
         .user-message {
             align-self: flex-end;
             background-color: #dcf8c6;
@@ -66,7 +63,6 @@
             border-top-right-radius: 0;
         }
 
-        /* Bot Bubble (White) */
         .bot-message {
             align-self: flex-start;
             background-color: white;
@@ -74,7 +70,6 @@
             border-top-left-radius: 0;
         }
         
-        /* Formatting for bold text */
         .bot-message strong { color: #075e54; }
 
         /* 4. INPUT AREA */
@@ -104,7 +99,6 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
         button:hover { background-color: #128c7e; }
-
     </style>
 </head>
 <body>
@@ -116,7 +110,7 @@
 
     <div id="chat-container">
         <div class="message bot-message">
-            Hi there! 👋 I'm your AI assistant. I can chat about anything, but I'm especially good at writing WhatsApp templates. How can I help?
+            Hi! 👋 I'm ready to help. Ask me for a template or just chat!
         </div>
     </div>
 
@@ -126,7 +120,6 @@
     </div>
 
     <script>
-        // We will store the conversation history here so the bot remembers!
         let chatHistory = [];
 
         async function sendMessage() {
@@ -136,14 +129,11 @@
             
             if (!text) return;
 
-            // 1. Add User Message to Screen
+            // 1. Show user message immediately
             appendMessage(text, 'user-message');
             input.value = '';
 
-            // 2. Add User Message to History (for the AI to remember)
-            chatHistory.push({ role: "user", parts: [{ text: text }] });
-
-            // 3. Show Loading Animation
+            // 2. Show "Typing..."
             const loadingDiv = document.createElement('div');
             loadingDiv.className = 'message bot-message';
             loadingDiv.innerText = 'Typing...';
@@ -152,7 +142,9 @@
             container.scrollTop = container.scrollHeight;
 
             try {
-                // 4. Send History + New Message to Backend
+                // --- THE FIX IS HERE ---
+                // We send the OLD history + the NEW message separately.
+                // We do NOT add the new message to 'chatHistory' yet.
                 const response = await fetch('/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -164,21 +156,21 @@
                 
                 const data = await response.json();
                 
-                // 5. Remove Loading and Show Real Response
+                // Remove loading
                 container.removeChild(loadingDiv);
                 
-                // Format the text (turn **bold** into real bold)
+                // Show AI response
                 let cleanText = data.response.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                // Turn newlines into breaks
                 cleanText = cleanText.replace(/\n/g, '<br>');
-
                 appendMessage(cleanText, 'bot-message', true);
 
-                // 6. Add Bot Response to History
+                // 3. NOW we update the history with both messages for next time
+                chatHistory.push({ role: "user", parts: [{ text: text }] });
                 chatHistory.push({ role: "model", parts: [{ text: data.response }] });
 
             } catch (error) {
-                loadingDiv.innerText = "Error: Could not connect.";
+                loadingDiv.innerText = "Error: Connection failed. Try clicking 'New Chat'.";
+                console.error(error);
             }
         }
 
@@ -200,15 +192,9 @@
         }
 
         function clearChat() {
-            // Wipe the visual chat
             const container = document.getElementById('chat-container');
-            container.innerHTML = `
-                <div class="message bot-message">
-                    Chat cleared! 🧹 Start a new topic.
-                </div>
-            `;
-            // Wipe the memory
-            chatHistory = [];
+            container.innerHTML = `<div class="message bot-message">Chat cleared! 🧹</div>`;
+            chatHistory = []; // Wipe memory
         }
     </script>
 </body>
