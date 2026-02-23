@@ -29,7 +29,7 @@ def chat():
     user_message = request.json.get("message")
     
     try:
-        model = genai.GenerativeModel('gemini-1.5-flash-001', system_instruction=SYSTEM_PROMPT)
+        model = genai.GenerativeModel('gemini-pro', system_instruction=SYSTEM_PROMPT)
         chat = model.start_chat(history=[])
         response = chat.send_message(user_message)
         return jsonify({"response": response.text})
