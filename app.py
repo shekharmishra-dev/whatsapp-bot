@@ -5,33 +5,36 @@ import google.generativeai as genai
 app = Flask(__name__)
 
 # Configure Gemini
-# We will set the API key securely later on the server
 API_KEY = os.environ.get("GEMINI_API_KEY")
 if API_KEY:
     genai.configure(api_key=API_KEY)
 
-# This tells the AI how to behave
-SYSTEM_PROMPT = """
-You are a helpful assistant that writes WhatsApp Business Templates. 
-When a user asks for a template, provide:
-1. The Template Name (lowercase_with_underscores)
-2. The Category (e.g., UTILITY, MARKETING)
-3. The Body Text (use {{1}} for variables).
-Keep it clean and professional.
-"""
+# Use a safe default for now, but we will check the list later
+# We are removing 'system_instruction' for a moment to ensure basic connection works first
+model = genai.GenerativeModel('gemini-1.5-flash') 
 
 @app.route('/')
 def home():
     return render_template('index.html')
 
+@app.route('/test')
+def test_connection():
+    """This hidden page will list exactly what models your key can use."""
+    try:
+        available_models = []
+        for m in genai.list_models():
+            if 'generateContent' in m.supported_generation_methods:
+                available_models.append(m.name)
+        return jsonify({"STATUS": "API Connected!", "AVAILABLE_MODELS": available_models})
+    except Exception as e:
+        return jsonify({"STATUS": "Error", "DETAILS": str(e)})
+
 @app.route('/chat', methods=['POST'])
 def chat():
     user_message = request.json.get("message")
-    
     try:
-        model = genai.GenerativeModel('gemini-pro', system_instruction=SYSTEM_PROMPT)
-        chat = model.start_chat(history=[])
-        response = chat.send_message(user_message)
+        # Simple generation without system instructions for now to test the pipe
+        response = model.generate_content(user_message)
         return jsonify({"response": response.text})
     except Exception as e:
         return jsonify({"response": f"Error: {str(e)}"})
